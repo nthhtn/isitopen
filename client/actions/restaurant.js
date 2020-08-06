@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-export function getRestaurants({ page = 1, limit = 10 }) {
+export function getRestaurants({ page = 1, limit = 20 }) {
 	return async (dispatch) => {
 		let response = await fetch(`/api/restaurants?page=${page}&limit=${limit}`, { credentials: 'same-origin' });
 		let responseJson = await response.json();

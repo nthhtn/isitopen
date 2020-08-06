@@ -1,40 +1,31 @@
 import React, { Component } from 'react';
+import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
+import Pagination from 'react-js-pagination';
 
 import { getRestaurants } from '../actions/restaurant';
-
-class RestaurantItem extends Component {
-
-	constructor(props) {
-		super(props);
-		this.state = {};
-	}
-
-	render() {
-		const { restaurantName, businessHoursText } = this.props;
-		return (
-			<tr>
-				<td className="font-w600">{restaurantName}</td>
-				<td>{businessHoursText}</td>
-				<td></td>
-			</tr>
-		)
-	}
-
-};
 
 export default class Restaurant extends Component {
 
 	constructor(props) {
 		super(props);
-		this.state = {};
+		this.state = {
+			activePage: 1
+		};
 	}
 
-	async componentDidMount() {
+	componentDidMount() {
 		this.props.dispatch(getRestaurants({}));
+	}
+
+	onPageChange(page) {
+		this.props.dispatch(getRestaurants({ page }));
+		this.setState({ activePage: page });
 	}
 
 	render() {
 		const listRestaurant = this.props.restaurant.list;
+		const start = (this.state.activePage - 1) * 20 + 1;
+		const to = start + listRestaurant.length - 1;
 		return (
 			<main id="main-container">
 				<div className="bg-body-light">
@@ -50,20 +41,26 @@ export default class Restaurant extends Component {
 							<h3 className="block-title"></h3>
 						</div>
 						<div className="block-content">
-							<div className="table-responsive">
-								<table className="table table-bordered table-striped table-vcenter">
-									<thead>
-										<tr>
-											<th style={{ width: '30%' }}>Restaurant Name</th>
-											<th>Business Hours</th>
-											<th style={{ width: '10%' }}>Action</th>
-										</tr>
-									</thead>
-									<tbody>
-										{listRestaurant.map((item) => (<RestaurantItem key={item._id} {...item} />))}
-									</tbody>
-								</table>
-							</div>
+							<p>Result(s) from {start} to {to} in total of {this.props.restaurant.count}</p>
+							<BootstrapTable
+								data={listRestaurant}
+								hover
+							>
+								<TableHeaderColumn dataField='_id' isKey={true} hidden></TableHeaderColumn>
+								<TableHeaderColumn dataField='restaurantName' width="30%" columnClassName="font-w600" tdStyle={{ color: '#5c80d1' }}>
+									Restaurant Name
+								</TableHeaderColumn>
+								<TableHeaderColumn dataField='businessHoursText'>Business Hours</TableHeaderColumn>
+							</BootstrapTable>
+							<Pagination
+								itemClass="page-item"
+								linkClass="page-link"
+								activePage={this.state.activePage}
+								itemsCountPerPage={20}
+								totalItemsCount={this.props.restaurant.count}
+								pageRangeDisplayed={3}
+								onChange={this.onPageChange.bind(this)}
+							/>
 						</div>
 					</div>
 				</div>

@@ -9,9 +9,12 @@ module.exports = (app, db) => {
 	router.route('/')
 		.get(async (req, res) => {
 			try {
-				const result = await Restaurant.queryByFields({});
-				console.log(result);
-				return res.json({ success: true, result, count: result.length, hasMore: false });
+				let { page, limit } = req.query;
+				page = parseInt(page);
+				limit = parseInt(limit);
+				const result = await Restaurant.queryByFields({}, limit, limit * (page - 1));
+				const count = await Restaurant.countByFields({});
+				return res.json({ success: true, result, count, hasMore: count > limit * page });
 			} catch (error) {
 				return res.status(400).json({ success: false, error: error.message });
 			}
