@@ -41,7 +41,7 @@ export default class RestaurantModel {
 	async queryByFields(fields = {}, limit = 10, skip = 0) {
 		try {
 			const result = await this._db.collection(this._table).find(fields).skip(skip).limit(limit).toArray();
-			return await result;
+			return Promise.resolve(result);
 		} catch (error) {
 			return Promise.reject(error.message);
 		}
@@ -50,15 +50,6 @@ export default class RestaurantModel {
 	async countByFields(fields = {}) {
 		try {
 			return await this._db.collection(this._table).find(fields).count();
-		} catch (error) {
-			return Promise.reject(error.message);
-		}
-	}
-
-	async lookupThroughBusinessHours(fields = {}, limit = 10, skip = 0) {
-		try {
-			const result = await this._db.collection(this._table).find(fields).skip(skip).limit(limit).toArray();
-			return await result;
 		} catch (error) {
 			return Promise.reject(error.message);
 		}

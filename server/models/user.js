@@ -1,7 +1,7 @@
 /**
  * Collection "user"
  * @param _id:string
- * @param username:string
+ * @param email:string
  * @param password:string
  * @param salt:string
  */
@@ -18,7 +18,7 @@ export default class UserModel {
 	async create(data) {
 		data._id = new ObjectID().toString();
 		try {
-			await this._db.collection(this._table).createIndex({ username: 1 }, { unique: true });
+			await this._db.collection(this._table).createIndex({ email: 1 }, { unique: true });
 			await this._db.collection(this._table).insertOne(data);
 			return Promise.resolve(data);
 		} catch (error) {
@@ -29,6 +29,14 @@ export default class UserModel {
 	async read(id) {
 		try {
 			return this._db.collection(this._table).findOne({ _id: id });
+		} catch (error) {
+			return Promise.reject(error.message);
+		}
+	}
+
+	async readByEmail(email) {
+		try {
+			return await this._db.collection(this._table).findOne({ email });
 		} catch (error) {
 			return Promise.reject(error.message);
 		}

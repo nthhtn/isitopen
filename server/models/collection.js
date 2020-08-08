@@ -2,6 +2,7 @@
  * Collection "collection"
  * @param _id:string
  * @param collectionName:string
+ * @param description:string
  * @param userId:string
  */
 
@@ -28,6 +29,15 @@ export default class CollectionModel {
 	async read(id) {
 		try {
 			return this._db.collection(this._table).findOne({ _id: id });
+		} catch (error) {
+			return Promise.reject(error.message);
+		}
+	}
+
+	async queryByFields(fields = {}) {
+		try {
+			const result = await this._db.collection(this._table).find(fields).toArray();
+			return Promise.resolve(result);
 		} catch (error) {
 			return Promise.reject(error.message);
 		}

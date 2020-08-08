@@ -4,9 +4,12 @@ const path = require('path');
 module.exports = {
 	cache: true,
 	mode: 'development',
-	entry: './client/index',
+	entry: {
+		'anonymous': ['./client/Anonymous/index', 'webpack-hot-middleware/client'],
+		'user': ['./client/User/index', 'webpack-hot-middleware/client']
+	},
 	output: {
-		filename: 'webpack.bundle.js',
+		filename: '[name].bundle.js',
 		path: path.resolve(__dirname, 'dist'),
 		publicPath: '/static'
 	},

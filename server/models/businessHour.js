@@ -38,4 +38,13 @@ export default class BusinessHourModel {
 		}
 	}
 
+	async queryDistinct(distinct_field, fields) {
+		try {
+			const result = await this._db.collection(this._table).distinct(distinct_field, fields);
+			return Promise.resolve(result);
+		} catch (error) {
+			return Promise.reject(error.message);
+		}
+	}
+
 };
