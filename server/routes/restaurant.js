@@ -14,7 +14,7 @@ module.exports = (app, db) => {
 	router.route('/')
 		.get(async (req, res) => {
 			try {
-				let { page, limit, q, time, days } = req.query;
+				let { page, limit, q, time, days, not } = req.query;
 				let hour_fields = Object.assign({});
 				if (days) {
 					hour_fields.day = { $in: days.split(',').map((day) => (parseInt(day))) };
@@ -23,10 +23,16 @@ module.exports = (app, db) => {
 					hour_fields.openTime = { $lte: parseInt(time) };
 					hour_fields.closeTime = { $gte: parseInt(time) };
 				}
-				page = parseInt(page);
-				limit = parseInt(limit);
+				if (not) {
+					hour_fields.restaurantId = { $nin: not.split(',') };
+				}
 				const ids = await BusinessHour.queryDistinct('restaurantId', hour_fields);
-				const restaurant_fields = { _id: { $in: ids }, restaurantName: { $regex: new RegExp(q, 'gi') } };
+				page = page ? parseInt(page) : 1;
+				limit = limit ? parseInt(limit) : 20;
+				let restaurant_fields = { _id: { $in: ids }, restaurantName: { $regex: new RegExp(q, 'gi') } };
+				if (not) {
+					restaurant_fields._id['$nin'] = not.split(',');
+				}
 				const result = await Restaurant.queryByFields(restaurant_fields, limit, limit * (page - 1));
 				const count = await Restaurant.countByFields(restaurant_fields);
 				return res.json({ success: true, result, count, hasMore: count > limit * page });

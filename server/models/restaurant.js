@@ -38,7 +38,7 @@ export default class RestaurantModel {
 		}
 	}
 
-	async queryByFields(fields = {}, limit = 10, skip = 0) {
+	async queryByFields(fields = {}, limit = 20, skip = 0) {
 		try {
 			const result = await this._db.collection(this._table).find(fields).skip(skip).limit(limit).toArray();
 			return Promise.resolve(result);

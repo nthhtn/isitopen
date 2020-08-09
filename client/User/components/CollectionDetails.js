@@ -1,10 +1,9 @@
 import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
-import { AsyncTypeahead, Typeahead } from 'react-bootstrap-typeahead';
+import { Typeahead } from 'react-bootstrap-typeahead';
 import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
 import swal from 'sweetalert2';
 
-import { getCollectionDetails, removeFromCollection } from '../actions/collection';
+import { getCollectionDetails, removeFromCollection, addToCollection } from '../actions/collection';
 
 let self;
 
@@ -55,7 +54,8 @@ export default class CollectionDetails extends Component {
 		super(props);
 		this.state = {
 			collectionId: this.props.match.params.id,
-			listAdding: [],
+			listRestaurant: [],
+			listInModal: [],
 			weekdaySelected: [],
 			time: 0,
 			q: ''
@@ -64,7 +64,7 @@ export default class CollectionDetails extends Component {
 	}
 
 	async componentDidMount() {
-		this.props.dispatch(getCollectionDetails(this.state.collectionId));
+		await this.props.dispatch(getCollectionDetails(this.state.collectionId));
 		jQuery(() => {
 			One.helpers(['rangeslider']);
 			$('#filter-time').ionRangeSlider({
@@ -73,9 +73,19 @@ export default class CollectionDetails extends Component {
 				max: 1440,
 				step: 30,
 				skin: 'round',
-				values: sliderValues
+				values: sliderValues,
+				onFinish: (data) => {
+					self.setState({ time: data.from * 30 });
+				}
 			});
 		});
+		let url = `/api/restaurants?page=1&limit=20`;
+		if (this.props.collection.current.restaurants.length > 0) {
+			url += `&not=${this.props.collection.current.restaurants.map((item) => (item._id)).join(',')}`;
+		}
+		const response = await fetch(url, { credentials: 'same-origin' })
+			.then((response) => (response.json()));
+		this.setState({ listInModal: response.result });
 	}
 
 	async removeFromCollection(next, rowKeys) {
@@ -104,16 +114,34 @@ export default class CollectionDetails extends Component {
 		this.setState({ q: e.target.value });
 	}
 
-	applyFilter() {
+	async applyFilter() {
 		const { time, q } = this.state;
 		const days = this.state.weekdaySelected.map((item) => (item.value)).join(',');
+		let url = `/api/restaurants?page=1&limit=20`;
+		if (time) { url += `&time=${time}`; }
+		if (q) { url += `&q=${q}`; }
+		if (days) { url += `&days=${days}` };
+		if (this.props.collection.current.restaurants.length > 0) {
+			url += `&not=${this.props.collection.current.restaurants.map((item) => (item._id)).join(',')}`;
+		}
+		const response = await fetch(url, { credentials: 'same-origin' })
+			.then((response) => (response.json()));
+		this.setState({ listInModal: response.result });
+	}
+
+	async addToCollection() {
+		const rowKeys = this.refs.addingTable.state.selectedRowKeys;
+		const listRestaurant = this.state.listInModal.filter((item) => rowKeys.indexOf(item._id) > -1);
+		await this.props.dispatch(addToCollection(this.state.collectionId, listRestaurant));
+		self.refs.addingTable.cleanSelected();
+		$('#modal-restaurant').modal('hide');
 	}
 
 	render() {
 		const listRestaurant = this.props.collection.current?.restaurants || [];
 		const options = {
 			insertBtn: (onClick) => (
-				<button type="button" className="btn btn-success" data-toggle="modal" data-target="#modal-add">
+				<button type="button" className="btn btn-success" data-toggle="modal" data-target="#modal-restaurant" onClick={this.applyFilter.bind(self)}>
 					<i className="fa fa-fw fa-plus"></i>
 				</button>
 			),
@@ -145,13 +173,13 @@ export default class CollectionDetails extends Component {
 									<div className="block-header block-header-default">
 										<h3 className="block-title">Collaborators</h3>
 										<div className="block-options">
-											<button type="button" className="btn btn-sm btn-success mr-2" data-toggle="modal" data-target="#modal-add-collaborator">
+											<button type="button" className="btn btn-sm btn-success mr-2" data-toggle="modal" data-target="#modal-collaborator">
 												<i className="fa fa-plus"></i>
 											</button>
 										</div>
 									</div>
 									<div className="block-content">
-										<div className="modal fade" id="modal-add-collaborator" tabIndex="-1" role="dialog" aria-labelledby="modal-add-collaborator" aria-modal="true" style={{ paddingRight: '15px' }}>
+										<div className="modal fade" id="modal-collaborator" tabIndex="-1" role="dialog" aria-labelledby="modal-collaborator" aria-modal="true" style={{ paddingRight: '15px' }}>
 											<div className="modal-dialog" role="document">
 												<div className="modal-content">
 													<div className="block block-themed block-transparent mb-0">
@@ -172,7 +200,7 @@ export default class CollectionDetails extends Component {
 														</div>
 														<div className="block-content block-content-full text-right border-top">
 															<button type="button" className="btn btn-sm btn-light" data-dismiss="modal">Close</button>
-															<button type="button" className="btn btn-sm btn-primary" onClick={this.addCollaborator}><i className="fa fa-check"></i> Ok</button>
+															<button type="button" className="btn btn-sm btn-primary"><i className="fa fa-check"></i> Ok</button>
 														</div>
 													</div>
 												</div>
@@ -188,7 +216,7 @@ export default class CollectionDetails extends Component {
 							<div className="block">
 								<div className="block-content">
 									<div className="pull-x">
-										<div className="modal fade" id="modal-add" tabIndex="-1" role="dialog" aria-labelledby="modal-add" aria-modal="true" style={{ paddingRight: '15px' }}>
+										<div className="modal fade" id="modal-restaurant" tabIndex="-1" role="dialog" aria-labelledby="modal-restaurant" aria-modal="true" style={{ paddingRight: '15px' }}>
 											<div className="modal-dialog modal-xl" role="document">
 												<div className="modal-content">
 													<div className="block block-themed block-transparent mb-0">
@@ -226,10 +254,12 @@ export default class CollectionDetails extends Component {
 															</div>
 															<p>Showing top 20 results only</p>
 															<BootstrapTable
-																data={this.state.listAdding}
+																data={this.state.listInModal}
 																hover
 																bodyStyle={{ cursor: 'pointer' }}
 																ref='addingTable'
+																headerStyle={{ display: 'none' }}
+																selectRow={{ mode: 'checkbox' }}
 															>
 																<TableHeaderColumn dataField='_id' isKey={true} hidden></TableHeaderColumn>
 																<TableHeaderColumn dataField='restaurantName' width="30%" columnClassName="font-w600" tdStyle={{ color: '#5c80d1' }}>
@@ -240,7 +270,7 @@ export default class CollectionDetails extends Component {
 														</div>
 														<div className="block-content block-content-full text-right border-top">
 															<button type="button" className="btn btn-sm btn-light" data-dismiss="modal">Close</button>
-															<button type="button" className="btn btn-sm btn-primary"><i className="fa fa-check mr-1"></i>Ok</button>
+															<button type="button" className="btn btn-sm btn-primary" onClick={this.addToCollection.bind(this)}><i className="fa fa-check mr-1"></i>Ok</button>
 														</div>
 													</div>
 												</div>

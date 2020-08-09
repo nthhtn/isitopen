@@ -71,17 +71,17 @@ function removeFromCollectionSuccess(list) {
 	return { type: 'REMOVE_FROM_COLLECTION_SUCCESS', list };
 };
 
-export function addToCollection(collectionId, restaurantIds) {
+export function addToCollection(collectionId, listRestaurant) {
 	return async (dispatch) => {
 		let response = await fetch(`/api/collections/${collectionId}/restaurants`, {
 			credentials: 'same-origin',
 			method: 'post',
 			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ list: restaurantIds })
+			body: JSON.stringify({ list: listRestaurant.map((item) => (item._id)) })
 		});
 		let responseJson = await response.json();
 		if (responseJson.success) {
-			dispatch(addToCollectionSuccess(restaurantIds));
+			dispatch(addToCollectionSuccess(listRestaurant));
 		}
 	};
 };

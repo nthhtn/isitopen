@@ -9,11 +9,16 @@ export default function (state = initialState, action) {
 		case 'CREATE_COLLECTION_SUCCESS': return { ...state, list: [...state.list, action.result] };
 		case 'GET_COLLECTION_DETAILS_SUCCESS': return { ...state, current: action.result };
 		case 'REMOVE_FROM_COLLECTION_SUCCESS':
-			let restaurants = [...state.current.restaurants];
-			restaurants = restaurants.filter((item) => action.list.indexOf(item) === -1);
-			return { ...state, current: { ...state.current, restaurants } };
+			{
+				let restaurants = [...state.current.restaurants];
+				restaurants = restaurants.filter((item) => action.list.indexOf(item._id) === -1);
+				return { ...state, current: { ...state.current, restaurants } };
+			}
 		case 'ADD_TO_COLLECTION_SUCCESS':
-			return state;
+			{
+				let restaurants = [...state.current.restaurants, ...action.list];
+				return { ...state, current: { ...state.current, restaurants } };
+			}
 		default: return state;
 	}
 };
