@@ -67,4 +67,23 @@ export default class RestaurantCollectionModel {
 		}
 	}
 
+	async lookupRestaurant(collectionId) {
+		const lookup = {
+			from: 'restaurant',
+			let: { restaurantId: '$restaurantId' },
+			pipeline: [
+				{ $match: { $expr: { $eq: ['$_id', '$$restaurantId'] } } },
+				{ $project: { restaurantName: 1, businessHoursText: 1 } }
+			],
+			as: 'restaurants'
+		};
+		const aggregate = [{ $match: { collectionId } }, { $lookup: lookup }, { $unwind: { path: '$restaurants', preserveNullAndEmptyArrays: true } }];
+		try {
+			const result = await this._db.collection(this._table).aggregate(aggregate).toArray();
+			return result.map((item) => (item.restaurants));
+		} catch (error) {
+			return Promise.reject(error.message);
+		}
+	}
+
 };

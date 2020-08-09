@@ -10,6 +10,7 @@ module.exports = (app, db) => {
 
 	require('./restaurant')(app, db);
 	require('./collection')(app, db);
+	require('./user')(app, db);
 
 	app.route('/logout')
 		.get((req, res) => {

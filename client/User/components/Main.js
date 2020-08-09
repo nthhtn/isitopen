@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 
 import Restaurant from './Restaurant';
 import Collection from './Collection';
+import CollectionDetails from './CollectionDetails';
 
 class Main extends Component {
 
@@ -19,6 +20,8 @@ class Main extends Component {
 					render={(props) => <Restaurant {...this.props} {...props} />} />
 				<Route exact path='/collections'
 					render={(props) => <Collection {...this.props} {...props} />} />
+				<Route path='/collections/:id'
+					render={(props) => <CollectionDetails {...this.props} {...props} />} />
 				<Route path='*'
 					render={(props) => <Restaurant {...this.props} {...props} />} />
 			</Switch>

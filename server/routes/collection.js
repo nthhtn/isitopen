@@ -29,7 +29,7 @@ module.exports = (app, db) => {
 	router.route('/:id')
 		.get(async (req, res) => {
 			try {
-				const result = await Collection.read({ _id: req.params.id });
+				const result = await Collection.read(req.params.id);
 				return res.json({ success: true, result });
 			} catch (error) {
 				return res.status(400).json({ success: false, error: error.message });
@@ -38,10 +38,29 @@ module.exports = (app, db) => {
 
 	router.route('/:id/restaurants')
 		.get(async (req, res) => {
-
+			try {
+				const result = await RestaurantCollection.lookupRestaurant(req.params.id);
+				return res.json({ success: true, result });
+			} catch (error) {
+				return res.status(400).json({ success: false, error: error.message });
+			}
 		})
-		.put(async (req, res) => {
-
+		.post(async (req, res) => {
+			try {
+				const data = req.body.list.map((item) => ({ restaurantId: item, collectionId: req.params.id }));
+				await RestaurantCollection.createMany(data);
+				return res.json({ success: true });
+			} catch (error) {
+				return res.status(400).json({ success: false, error: error.message });
+			}
+		})
+		.delete(async (req, res) => {
+			try {
+				await RestaurantCollection.deleteMany({ collectionId: req.params.id, restaurantId: { $in: req.body.list } });
+				return res.json({ success: true });
+			} catch (error) {
+				return res.status(400).json({ success: false, error: error.message });
+			}
 		});
 
 	app.use('/api/collections', router);

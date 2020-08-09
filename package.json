@@ -12,6 +12,7 @@
   "dependencies": {
     "@babel/core": "^7.11.0",
     "@babel/plugin-proposal-object-rest-spread": "^7.11.0",
+    "@babel/plugin-proposal-optional-chaining": "^7.11.0",
     "@babel/plugin-transform-runtime": "^7.11.0",
     "@babel/plugin-transform-spread": "^7.11.0",
     "@babel/polyfill": "^7.10.4",
@@ -40,6 +41,7 @@
     "react-router-dom": "^5.2.0",
     "redux": "^4.0.5",
     "redux-thunk": "^2.3.0",
+    "sweetalert2": "^9.17.1",
     "webpack": "^4.44.1",
     "webpack-dev-middleware": "^3.7.2",
     "webpack-hot-middleware": "^2.25.0"

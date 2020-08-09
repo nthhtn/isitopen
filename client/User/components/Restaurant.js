@@ -57,7 +57,9 @@ export default class Restaurant extends Component {
 	}
 
 	onPageChange(page) {
-		this.props.dispatch(getRestaurants({ page }));
+		const { time, q } = this.state;
+		const days = this.state.weekdaySelected.map((item) => (item.value)).join(',');
+		this.props.dispatch(getRestaurants({ q, time, days, page }));
 		this.setState({ activePage: page });
 	}
 
@@ -172,7 +174,6 @@ export default class Restaurant extends Component {
 								pageRangeDisplayed={3}
 								onChange={this.onPageChange.bind(this)}
 							/>
-
 							<div className="modal fade" id="modal-collection" tabIndex="-1" role="dialog" aria-labelledby="modal-collection" aria-modal="true" style={{ paddingRight: '15px' }}>
 								<div className="modal-dialog" role="document">
 									<div className="modal-content">

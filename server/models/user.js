@@ -42,4 +42,13 @@ export default class UserModel {
 		}
 	}
 
+	async queryByFields(fields = {}) {
+		try {
+			const result = await this._db.collection(this._table).find(fields, { projection: { password: 0, salt: 0 } }).toArray();
+			return await result;
+		} catch (error) {
+			return Promise.reject(error.message);
+		}
+	}
+
 };
