@@ -31,7 +31,7 @@ export default class BusinessHourModel {
 			return item;
 		});
 		try {
-			await this._db.collection(this._table).insertMany(list);
+			await this._db.collection(this._table).insertMany(list, { ordered: false });
 			return Promise.resolve(list);
 		} catch (error) {
 			return Promise.reject(error.message);

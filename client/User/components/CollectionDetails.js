@@ -249,7 +249,7 @@ export default class CollectionDetails extends Component {
 																		onChange={this.onKeywordChange.bind(this)} />
 																</div>
 																<div className="form-group col-sm-1">
-																	<button className="btn btn-primary form-control" onClick={this.applyFilter.bind(this)}>Apply</button>
+																	<button className="btn btn-sm btn-primary form-control" onClick={this.applyFilter.bind(this)}>Apply</button>
 																</div>
 															</div>
 															<p>Showing top 20 results only</p>

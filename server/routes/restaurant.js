@@ -1,8 +1,12 @@
 import express from 'express';
+import mime from 'mime';
 
 import RestaurantModel from '../models/restaurant';
 import BusinessHourModel from '../models/businessHour';
 import RestaurantCollectionModel from '../models/restaurantCollection';
+import { importFromCsv } from '../helpers/import';
+
+const multipart = require('connect-multiparty')();
 
 module.exports = (app, db) => {
 
@@ -39,6 +43,15 @@ module.exports = (app, db) => {
 			} catch (error) {
 				return res.status(400).json({ success: false, error: error.message });
 			}
+		})
+		.post(multipart, async (req, res) => {
+			const file = req.files['import-file'];
+			if (!file) { res.status(400).json({ success: false, error: 'File not found' }); }
+			if (!file.size) { { res.status(400).json({ success: false, error: 'Invalid file size' }); } }
+			const validFileTypes = ['text/csv'];
+			if (validFileTypes.indexOf(mime.getType(file.path)) === -1) { { res.status(400).json({ success: false, error: 'Invalid file type' }); } }
+			importFromCsv(db, file.path);
+			res.json({ success: true });
 		});
 
 	router.route('/:id/collections')

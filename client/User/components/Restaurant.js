@@ -32,7 +32,8 @@ export default class Restaurant extends Component {
 			time: 0,
 			q: '',
 			currentRestaurant: null,
-			collectionSelected: []
+			collectionSelected: [],
+			filename: ''
 		};
 		self = this;
 	}
@@ -53,6 +54,9 @@ export default class Restaurant extends Component {
 				}
 			});
 		});
+		$('#import-file').change(e => {
+			if (e.currentTarget.files.length) { self.setState({ filename: e.currentTarget.files[0].name }); }
+		})
 		this.props.dispatch(getCollections());
 	}
 
@@ -99,6 +103,25 @@ export default class Restaurant extends Component {
 		$('#modal-collection').modal('hide');
 	}
 
+	async handleImportFile(e) {
+		e.preventDefault();
+		const filename = this.state.filename;
+		console.log(filename);
+		const regex = new RegExp('(.*?)\.(csv)$');
+		if (!(regex.test(filename.toLowerCase()))) { return; }
+		let formData = new FormData(e.target);
+		let uploadXHR = new XMLHttpRequest();
+		uploadXHR.open('POST', '/api/restaurants', true);
+		uploadXHR.onload = function () {
+			const response = JSON.parse(uploadXHR.responseText);
+			window.location.href = '/restaurants';
+		}
+		uploadXHR.onerror = (error) => {
+			window.location.href = '/restaurants';
+		}
+		uploadXHR.send(formData);
+	}
+
 	render() {
 		const listRestaurant = this.props.restaurant.list;
 		const start = (this.state.activePage - 1) * 20 + 1;
@@ -127,6 +150,41 @@ export default class Restaurant extends Component {
 					<div className="block">
 						<div className="block-header block-header-default">
 							<h3 className="block-title"></h3>
+							<div className="block-options">
+								<button type="button" className="btn btn-sm btn-success mr-2" data-toggle="modal" data-target="#modal-import">
+									<i className="fa fa-plus"></i> Import
+								</button>
+								<div className="modal fade" id="modal-import" tabIndex="-1" role="dialog" aria-labelledby="modal-import" aria-modal="true" style={{ paddingRight: '15px' }}>
+									<div className="modal-dialog modal-lg" role="document">
+										<div className="modal-content">
+											<form className="block block-themed block-transparent mb-0" id='import-restaurant' encType="multipart/form-data"
+												onSubmit={this.handleImportFile.bind(this)}>
+												<div className="block-header bg-primary-dark">
+													<h3 className="block-title">Import restaurants from csv</h3>
+													<div className="block-options">
+														<button type="button" className="btn-block-option" data-dismiss="modal" aria-label="Close">
+															<i className="fa fa-fw fa-times"></i>
+														</button>
+													</div>
+												</div>
+												<div className="block-content font-size-sm">
+													<p><strong>Please import .csv file as the following <a href="/assets/sample.csv">example</a></strong></p>
+													<div className="row">
+														<div className="form-group col-sm-12">
+															<label htmlFor="import-file"></label>
+															<input type="file" id="import-file" name="import-file" accept='.csv' />
+														</div>
+													</div>
+												</div>
+												<div className="block-content block-content-full text-right border-top">
+													<button type="button" className="btn btn-sm btn-light" data-dismiss="modal">Close</button>
+													<button type="submit" className="btn btn-sm btn-primary"><i className="fa fa-check"></i> Ok</button>
+												</div>
+											</form>
+										</div>
+									</div>
+								</div>
+							</div>
 						</div>
 						<div className="block-content">
 							<div className="row">
@@ -149,7 +207,7 @@ export default class Restaurant extends Component {
 										onChange={this.onKeywordChange.bind(this)} />
 								</div>
 								<div className="form-group col-sm-1">
-									<button className="btn btn-primary form-control" onClick={this.applyFilter.bind(this)}>Apply</button>
+									<button className="btn btn-sm btn-primary form-control" onClick={this.applyFilter.bind(this)}>Apply</button>
 								</div>
 							</div>
 							<p>Result(s) from {start} to {to} in total of {this.props.restaurant.count}</p>
