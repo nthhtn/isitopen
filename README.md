@@ -1,7 +1,5 @@
 # IS IT OPEN?
 
-***
-
 Description of the webapp is here: https://gist.github.com/seahyc/d013a8f8f1c1be52513cf7b77cce6e81
 
 This is the raw data for restaurant opening hours - (https://gist.githubusercontent.com/seahyc/7ee4da8a3fb75a13739bdf5549172b1f/raw/f1c3084250b1cb263198e433ae36ba8d7a0d9ea9/hours.csv). Treat it as a raw data source that you can extract, transform and load into your database.
